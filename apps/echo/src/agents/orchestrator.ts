@@ -10,6 +10,7 @@ import { runActionExtractor } from "./action-extractor";
 import { runStakeholderClassifier } from "./stakeholder-classifier";
 import { runDecisionMaker } from "./decision-maker";
 import { runCommsDrafter } from "./comms-drafter";
+import { runExecutor } from "./executor";
 
 const recordingDoneEventDataSchema = z.object({
   recallBotId: z.string(),
@@ -126,6 +127,17 @@ export const runAgents = inngest.createFunction(
       runCommsDrafter(meetingId, decision.output, decision.agentMessageId),
     );
 
+    const execution = await step.run("executor", () =>
+      runExecutor(meetingId, comms.workflow, comms.agentMessageId),
+    );
+
+    await step.run("mark-complete", async () => {
+      await db
+        .update(meetings)
+        .set({ status: "complete" })
+        .where(eq(meetings.id, meetingId));
+    });
+
     return {
       meetingId,
       actionCount: extractor.actions.length,
@@ -133,6 +145,7 @@ export const runAgents = inngest.createFunction(
       hubspotCount: comms.workflow.hubspot_updates.length,
       linearCount: comms.workflow.linear_issues.length,
       gmailCount: comms.workflow.gmail_drafts.length,
+      executionResults: execution.results,
     };
   },
 );
