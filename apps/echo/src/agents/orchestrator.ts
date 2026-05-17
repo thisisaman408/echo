@@ -8,6 +8,7 @@ import { transcribeFromUrl } from "@/integrations/speechmatics";
 import { putAudio } from "@/integrations/vultr-storage";
 import { runActionExtractor } from "./action-extractor";
 import { runStakeholderClassifier } from "./stakeholder-classifier";
+import { runDecisionMaker } from "./decision-maker";
 
 const recordingDoneEventDataSchema = z.object({
   recallBotId: z.string(),
@@ -116,10 +117,17 @@ export const runAgents = inngest.createFunction(
       runStakeholderClassifier(meetingId),
     );
 
+    const decision = await step.run("decision-maker", () =>
+      runDecisionMaker(meetingId),
+    );
+
     return {
       meetingId,
       actionCount: extractor.actions.length,
       speakerCount: classifier.output.speakers.length,
+      hubspotCount: decision.output.workflow.hubspot_updates.length,
+      linearCount: decision.output.workflow.linear_issues.length,
+      gmailCount: decision.output.workflow.gmail_drafts.length,
     };
   },
 );
