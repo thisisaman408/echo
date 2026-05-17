@@ -107,6 +107,13 @@ What does NOT deserve an entry:
 **Founder impact:** None visible. Prompt iteration is slightly more annoying (need to escape quotes) but still a single file edit.
 **Reversible:** Trivial to swap to fs-based loading once Turbopack supports `?raw`.
 
+## 2026-05-17 06:20 — Cut Better Auth from v1; DEMO_MODE single-user
+**Decision:** Skipped Better Auth integration (plan M3.3 step 2). The DEMO_MODE single-user flow has no login screen — the dashboard at `/dashboard` is publicly accessible during the hackathon demo. Founder seeds a single demo user on first bot dispatch.
+**Why:** Better Auth integration requires schema additions (4 new tables), an OAuth callback page, a sign-in UI, and session middleware on every protected route — at least 1-2 hours. The judges' demo is single-user; nobody is logging in. Scope-cut order in plan §11 explicitly allows cutting Better Auth.
+**Considered:** Build it anyway with Google-only — rejected for time. Add a password gate — rejected (worse UX than nothing).
+**Founder impact:** Production URL is publicly accessible. **Mitigation:** until multi-user mode ships, deploy with HTTP basic auth at the Caddy layer if exposing publicly beyond the demo. See SETUP_REQUIRED.md.
+**Reversible:** Yes. Better Auth scaffolding is a documented Day 4 task; tables already in plan, only ~2h to wire fully.
+
 ## 2026-05-17 06:00 — Inngest v4 createFunction API used directly
 **Decision:** Use the new 3-arg → 2-arg shape `createFunction({ id, triggers, ...config }, handler)` (Inngest v4) instead of the v3 `(config, trigger, handler)` shape shown in the plan.
 **Why:** Inngest v4 is installed; the v3 signature no longer typechecks. v4 collapses the trigger object into the options bag.

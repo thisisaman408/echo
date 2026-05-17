@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import type { ExecutedAction } from "./action-card";
 
@@ -79,11 +79,12 @@ export function AuditDrilldown({
   }, [action.id, meetingId]);
 
   // Seek the audio to the snippet's start time once metadata loads.
-  const handleLoadedMetadata = useCallback(() => {
+  // React Compiler memoizes this for us.
+  const handleLoadedMetadata = () => {
     if (data?.sourceSegment && audioRef.current) {
       audioRef.current.currentTime = data.sourceSegment.startSec;
     }
-  }, [data?.sourceSegment]);
+  };
 
   // Close on Escape.
   useEffect(() => {
