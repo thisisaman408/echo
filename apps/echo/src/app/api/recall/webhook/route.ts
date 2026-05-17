@@ -1,5 +1,5 @@
-import crypto from "node:crypto";
 import { eq } from "drizzle-orm";
+import { Webhook, WebhookVerificationError } from "svix";
 import { z } from "zod";
 import { db } from "@/db/client";
 import { meetings } from "@/db/schema";
@@ -9,13 +9,13 @@ import { inngest } from "@/lib/inngest";
 export const runtime = "nodejs";
 
 /**
- * Recall.ai webhook. Two events we care about:
+ * Recall.ai webhook. Delivered via Svix — signature verification uses the
+ * `svix` library because Recall signs `${svix-id}.${svix-timestamp}.${body}`
+ * with base64 (not hex of body) and ships multiple versioned sig tokens.
+ *
+ * Two events we care about:
  *  - bot.status_change → update meeting row
  *  - recording.done    → emit Inngest event that kicks off the agent pipeline
- *
- * Signature verification uses HMAC-SHA256 of the raw body with the secret
- * we registered when creating the webhook in the Recall dashboard. Constant-
- * time compare so timing differences don't leak the secret.
  */
 
 const statusChangeSchema = z.object({
@@ -54,43 +54,41 @@ function statusCodeToMeetingStatus(
   return "scheduled";
 }
 
-function timingSafeEqual(a: string, b: string): boolean {
-  const aBuf = Buffer.from(a);
-  const bBuf = Buffer.from(b);
-  if (aBuf.length !== bBuf.length) return false;
-  return crypto.timingSafeEqual(aBuf, bBuf);
-}
-
 export async function POST(req: Request) {
   const rawBody = await req.text();
 
-  const signature =
-    req.headers.get("x-recall-signature") ??
-    req.headers.get("svix-signature") ??
-    "";
-  const expected = crypto
-    .createHmac("sha256", env.RECALL_WEBHOOK_SECRET)
-    .update(rawBody)
-    .digest("hex");
+  const svixHeaders = {
+    "svix-id": req.headers.get("svix-id") ?? "",
+    "svix-timestamp": req.headers.get("svix-timestamp") ?? "",
+    "svix-signature": req.headers.get("svix-signature") ?? "",
+  };
 
-  if (!signature || !timingSafeEqual(signature, expected)) {
-    return new Response("Invalid signature", { status: 401 });
+  if (
+    !svixHeaders["svix-id"] ||
+    !svixHeaders["svix-timestamp"] ||
+    !svixHeaders["svix-signature"]
+  ) {
+    return new Response("Missing Svix headers", { status: 401 });
   }
 
-  let parsed: unknown;
+  let payload: unknown;
   try {
-    parsed = JSON.parse(rawBody);
-  } catch {
-    return new Response("Bad JSON", { status: 400 });
+    const wh = new Webhook(env.RECALL_WEBHOOK_SECRET);
+    payload = wh.verify(rawBody, svixHeaders);
+  } catch (e) {
+    if (e instanceof WebhookVerificationError) {
+      return new Response("Invalid signature", { status: 401 });
+    }
+    return new Response("Bad payload", { status: 400 });
   }
 
-  const envelope = envelopeSchema.safeParse(parsed);
+  const envelope = envelopeSchema.safeParse(payload);
   if (!envelope.success) {
     return new Response("Bad payload", { status: 400 });
   }
 
   if (envelope.data.event === "bot.status_change") {
-    const statusEvent = statusChangeSchema.safeParse(parsed);
+    const statusEvent = statusChangeSchema.safeParse(payload);
     if (statusEvent.success) {
       const mappedStatus = statusCodeToMeetingStatus(
         statusEvent.data.data.status.code,
@@ -103,7 +101,7 @@ export async function POST(req: Request) {
   }
 
   if (envelope.data.event === "recording.done") {
-    const recEvent = recordingDoneSchema.safeParse(parsed);
+    const recEvent = recordingDoneSchema.safeParse(payload);
     if (recEvent.success) {
       await inngest.send({
         name: "echo/meeting.recording_done",

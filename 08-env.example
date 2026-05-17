@@ -34,7 +34,10 @@ GOOGLE_OAUTH_REFRESH_TOKEN=""
 # Get key at https://ap-northeast-1.recall.ai/dashboard/developers
 RECALL_API_KEY=""
 RECALL_REGION="ap-northeast-1"
-# Generate with: openssl rand -hex 16 — register this with Recall when creating webhook
+# Create a webhook endpoint at https://ap-northeast-1.recall.ai/dashboard/webhooks
+# pointing at https://<ECHO_PUBLIC_HOSTNAME>/api/recall/webhook with events
+# bot.status_change and recording.done. Recall (via Svix) returns a secret like
+# `whsec_xxx...` — paste the FULL string (including the whsec_ prefix) here.
 RECALL_WEBHOOK_SECRET=""
 
 # ─── SPEECHMATICS (audio → transcript with diarization) ────────────────
