@@ -1,0 +1,122 @@
+# ECHO · environment variables
+# Copy this to apps/echo/.env.local (or .env) and fill in.
+# DEMO_MODE=true uses personal tokens / webhooks (hackathon path).
+# DEMO_MODE=false uses full OAuth per-user (post-hackathon multi-tenant path).
+# See 09-integrations.md for where to obtain each credential.
+
+# ─── MODE ──────────────────────────────────────────────────────────────
+DEMO_MODE="true"
+NODE_ENV="development"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+ECHO_PUBLIC_HOSTNAME="echo.localhost"  # used for webhook URL construction
+
+# ─── DATABASE ──────────────────────────────────────────────────────────
+# Postgres + pgvector (self-hosted on Vultr VM in production; local Docker or Neon for dev)
+DATABASE_URL="postgresql://echo:CHANGE_ME@localhost:5432/echo?sslmode=disable"
+
+# ─── AUTH (Better Auth — ECHO web app login) ───────────────────────────
+# Generate secret with: openssl rand -hex 32
+BETTER_AUTH_SECRET=""
+BETTER_AUTH_URL="http://localhost:3000"
+
+# ─── GOOGLE OAUTH (shared: Calendar via Recall + Gmail drafts + Login) ─
+# Create at https://console.cloud.google.com → APIs & Services → Credentials
+# Enable: Gmail API, Google Calendar API
+# Scopes added: gmail.compose, calendar.events.readonly, userinfo.email, openid
+# Add http://localhost:3000/api/auth/google/callback to redirect URIs
+GOOGLE_OAUTH_CLIENT_ID=""
+GOOGLE_OAUTH_CLIENT_SECRET=""
+GOOGLE_OAUTH_REDIRECT_URI="http://localhost:3000/api/auth/google/callback"
+# Personal refresh token (DEMO_MODE only — run `pnpm tsx scripts/google-oauth-dance.ts` to get it)
+GOOGLE_OAUTH_REFRESH_TOKEN=""
+
+# ─── RECALL.AI (meeting bot platform) ──────────────────────────────────
+# Get key at https://ap-northeast-1.recall.ai/dashboard/developers
+RECALL_API_KEY=""
+RECALL_REGION="ap-northeast-1"
+# Generate with: openssl rand -hex 16 — register this with Recall when creating webhook
+RECALL_WEBHOOK_SECRET=""
+
+# ─── SPEECHMATICS (audio → transcript with diarization) ────────────────
+# Get key at https://portal.speechmatics.com/manage-access
+SPEECHMATICS_API_KEY=""
+
+# ─── GEMINI (Decision Maker + Comms Drafter) ───────────────────────────
+# Get free key at https://aistudio.google.com → "Get API key"
+GEMINI_API_KEY=""
+GEMINI_MODEL_REASONING="gemini-2.0-pro-exp"
+GEMINI_MODEL_FAST="gemini-2.0-flash-exp"
+
+# ─── FEATHERLESS (Action Extractor + Stakeholder Classifier) ───────────
+# Activate Premium via hackathon coupon (Featherless Discord during kick-off)
+FEATHERLESS_API_KEY=""
+FEATHERLESS_MODEL_EXTRACTOR="meta-llama/Meta-Llama-3.1-8B-Instruct"
+FEATHERLESS_MODEL_CLASSIFIER="meta-llama/Meta-Llama-3.1-8B-Instruct"
+
+# ─── HUBSPOT (CRM execution) ───────────────────────────────────────────
+# DEMO_MODE: HubSpot Private App token
+# Create at https://app.hubspot.com/private-apps → New private app
+# Required scopes: crm.objects.deals.read, crm.objects.deals.write,
+#                  crm.objects.notes.write, crm.objects.contacts.read,
+#                  crm.objects.contacts.write
+HUBSPOT_PRIVATE_TOKEN=""
+
+# PRODUCTION: Public app OAuth (only used when DEMO_MODE=false)
+HUBSPOT_CLIENT_ID=""
+HUBSPOT_CLIENT_SECRET=""
+HUBSPOT_REDIRECT_URI="http://localhost:3000/api/auth/hubspot/callback"
+
+# ─── LINEAR (task creation) ────────────────────────────────────────────
+# DEMO_MODE: Personal API key
+# Create at https://linear.app/settings/api
+LINEAR_API_KEY=""
+LINEAR_TEAM_ID=""  # UUID of the team where ECHO creates issues
+
+# PRODUCTION: OAuth (DEMO_MODE=false)
+LINEAR_CLIENT_ID=""
+LINEAR_CLIENT_SECRET=""
+LINEAR_REDIRECT_URI="http://localhost:3000/api/auth/linear/callback"
+
+# ─── SLACK (summary posts) ─────────────────────────────────────────────
+# DEMO_MODE: Incoming webhook URL (single channel)
+# Create at https://api.slack.com/apps → New App → Incoming Webhooks
+SLACK_WEBHOOK_URL=""
+
+# PRODUCTION: OAuth (DEMO_MODE=false)
+SLACK_CLIENT_ID=""
+SLACK_CLIENT_SECRET=""
+SLACK_SIGNING_SECRET=""
+
+# ─── INNGEST (orchestrator) ────────────────────────────────────────────
+# For local dev, the Inngest dev server runs without keys.
+# For production, create a project at https://inngest.com
+INNGEST_EVENT_KEY=""
+INNGEST_SIGNING_KEY=""
+
+# ─── VULTR OBJECT STORAGE (audio archive for audit drill-down) ─────────
+# Create at https://my.vultr.com/objectstorage/
+VULTR_STORAGE_ACCESS_KEY=""
+VULTR_STORAGE_SECRET_KEY=""
+VULTR_STORAGE_ENDPOINT="https://ap-northeast-1.vultrobjects.com"
+VULTR_STORAGE_BUCKET="echo-audio"
+
+# ─── OBSERVABILITY (optional but recommended) ──────────────────────────
+# Sentry (free tier)
+SENTRY_DSN=""
+NEXT_PUBLIC_SENTRY_DSN=""
+
+# PostHog (free tier)
+NEXT_PUBLIC_POSTHOG_KEY=""
+NEXT_PUBLIC_POSTHOG_HOST="https://us.i.posthog.com"
+
+# ─── ECHO APP CONFIG ───────────────────────────────────────────────────
+# Where do executed actions get filed?
+ECHO_DEFAULT_HUBSPOT_PIPELINE_ID=""  # leave blank for default
+ECHO_DEFAULT_LINEAR_PROJECT_ID=""    # leave blank to use team root
+ECHO_DEFAULT_SLACK_CHANNEL="#echo-test"  # for display only — webhook is bound to a channel
+ECHO_GMAIL_DRAFT_FROM=""             # your verified Gmail address
+
+# Agent behavior
+ECHO_MAX_ACTIONS_PER_MEETING="20"    # safety: cap actions per meeting
+ECHO_REQUIRE_HUMAN_APPROVAL="false"  # set true to require review before execution (v2)
+ECHO_TRANSCRIPT_LANGUAGE="en"        # Speechmatics language code

@@ -1,0 +1,23 @@
+{
+  "name": "echo",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Autonomous multi-agent meeting workflow autopilot — Milan AI Week 2026",
+  "license": "MIT",
+  "author": "Aman Kumar <thisisaman408@gmail.com>",
+  "scripts": {
+    "dev": "pnpm --filter echo dev",
+    "build": "pnpm --filter echo build",
+    "start": "pnpm --filter echo start",
+    "test": "pnpm --filter echo test",
+    "typecheck": "pnpm --filter echo typecheck",
+    "lint": "pnpm --filter echo lint",
+    "db:generate": "pnpm --filter echo db:generate",
+    "db:migrate": "pnpm --filter echo db:migrate",
+    "db:push": "pnpm --filter echo db:push"
+  },
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

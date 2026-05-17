@@ -1,0 +1,48 @@
+# deps
+node_modules
+.pnpm-store
+
+# build
+.next
+out
+build
+dist
+*.tsbuildinfo
+next-env.d.ts
+
+# env
+.env
+.env.local
+.env.*.local
+!.env.example
+!08-env.example
+
+# runtime
+.cache
+.turbo
+.vercel
+coverage
+.nyc_output
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# OS / editor
+.DS_Store
+.idea
+.vscode
+*.swp
+*.swo
+
+# secrets / artifacts
+*.pem
+.claude-cache
+.echo-local
+scripts/.tmp/
+
+# misc
+.history/
