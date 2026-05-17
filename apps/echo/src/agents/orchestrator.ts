@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, isNull, and } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db/client";
 import { meetings, transcripts } from "@/db/schema";
@@ -6,6 +6,7 @@ import { inngest } from "@/lib/inngest";
 import { getRecordingDownloadUrl } from "@/integrations/recall";
 import { transcribeFromUrl } from "@/integrations/speechmatics";
 import { putAudio } from "@/integrations/vultr-storage";
+import { embedTexts } from "@/integrations/gemini";
 import { runActionExtractor } from "./action-extractor";
 import { runStakeholderClassifier } from "./stakeholder-classifier";
 import { runDecisionMaker } from "./decision-maker";
@@ -86,6 +87,28 @@ export const processRecording = inngest.createFunction(
           text: s.text,
         })),
       );
+    });
+
+    // Embed segments for pgvector search. Done as a separate step so a
+    // Gemini quota hiccup doesn't lose the transcripts we already inserted.
+    await step.run("embed-transcripts", async () => {
+      const pending = await db
+        .select()
+        .from(transcripts)
+        .where(
+          and(
+            eq(transcripts.meetingId, meeting.id),
+            isNull(transcripts.embedding),
+          ),
+        );
+      if (pending.length === 0) return;
+      const vectors = await embedTexts(pending.map((p) => p.text));
+      for (let i = 0; i < pending.length; i++) {
+        await db
+          .update(transcripts)
+          .set({ embedding: vectors[i] })
+          .where(eq(transcripts.id, pending[i].id));
+      }
     });
 
     await step.sendEvent("trigger-agents", {
