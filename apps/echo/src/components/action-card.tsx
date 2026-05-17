@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AuditDrilldown } from "./audit-drilldown";
 
 export type ExecutedAction = {
   id: string;
+  meetingId: string;
   integration: "hubspot" | "linear" | "slack" | "gmail";
   actionType: string;
   externalId: string | null;
@@ -33,13 +35,12 @@ const STATUS_PILL: Record<ExecutedAction["status"], string> = {
 export function ActionList({
   meetingId,
   initial = [],
-  onSelect,
 }: {
   meetingId: string;
   initial?: ExecutedAction[];
-  onSelect?: (a: ExecutedAction) => void;
 }) {
   const [actions, setActions] = useState<ExecutedAction[]>(initial);
+  const [audit, setAudit] = useState<ExecutedAction | null>(null);
 
   useEffect(() => {
     const seen = new Set(initial.map((a) => a.id));
@@ -67,56 +68,63 @@ export function ActionList({
   }
 
   return (
-    <ul className="space-y-2">
-      {actions.map((a) => (
-        <li
-          key={a.id}
-          className="rounded-lg border border-slate-800 bg-slate-900 p-3 transition hover:border-slate-700"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-sm font-medium text-slate-100">
-                {INTEGRATION_LABEL[a.integration]} · {a.actionType}
-              </div>
-              {a.externalUrl ? (
-                <a
-                  href={a.externalUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-mono text-xs text-lime-400 hover:underline"
-                >
-                  {a.externalId ?? "open"}
-                </a>
-              ) : (
-                <div className="font-mono text-xs text-slate-500">
-                  {a.externalId ?? "—"}
+    <>
+      <ul className="space-y-2">
+        {actions.map((a) => (
+          <li
+            key={a.id}
+            className="rounded-lg border border-slate-800 bg-slate-900 p-3 transition hover:border-slate-700"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-slate-100">
+                  {INTEGRATION_LABEL[a.integration]} · {a.actionType}
                 </div>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <span
-                className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_PILL[a.status]}`}
-              >
-                {a.status}
-              </span>
-              {onSelect && (
+                {a.externalUrl ? (
+                  <a
+                    href={a.externalUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-mono text-xs text-lime-400 hover:underline"
+                  >
+                    {a.externalId ?? "open"}
+                  </a>
+                ) : (
+                  <div className="font-mono text-xs text-slate-500">
+                    {a.externalId ?? "—"}
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_PILL[a.status]}`}
+                >
+                  {a.status}
+                </span>
                 <button
                   type="button"
-                  onClick={() => onSelect(a)}
+                  onClick={() => setAudit(a)}
                   className="rounded border border-slate-700 px-2 py-0.5 text-xs text-slate-300 hover:border-lime-500 hover:text-lime-400"
                 >
                   Why?
                 </button>
-              )}
+              </div>
             </div>
-          </div>
-          {a.errorMessage && (
-            <div className="mt-2 rounded bg-rose-950/40 p-2 text-xs text-rose-300">
-              {a.errorMessage}
-            </div>
-          )}
-        </li>
-      ))}
-    </ul>
+            {a.errorMessage && (
+              <div className="mt-2 rounded bg-rose-950/40 p-2 text-xs text-rose-300">
+                {a.errorMessage}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+      {audit && (
+        <AuditDrilldown
+          action={audit}
+          meetingId={meetingId}
+          onClose={() => setAudit(null)}
+        />
+      )}
+    </>
   );
 }
