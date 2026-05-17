@@ -6,10 +6,15 @@ import { inngest } from "@/lib/inngest";
 import { getRecordingDownloadUrl } from "@/integrations/recall";
 import { transcribeFromUrl } from "@/integrations/speechmatics";
 import { putAudio } from "@/integrations/vultr-storage";
+import { runActionExtractor } from "./action-extractor";
 
 const recordingDoneEventDataSchema = z.object({
   recallBotId: z.string(),
   recordingUrl: z.string().url().optional(),
+});
+
+const agentsStartEventDataSchema = z.object({
+  meetingId: z.string(),
 });
 
 /**
@@ -87,3 +92,26 @@ export const processRecording = inngest.createFunction(
     return { meetingId: meeting.id, segments: segments.length };
   },
 );
+
+/**
+ * Inngest function: fires after a meeting's transcripts are inserted. Walks
+ * the 5-agent chain in order. Future milestones (2.1-2.7) add the remaining
+ * agents to this function.
+ */
+export const runAgents = inngest.createFunction(
+  {
+    id: "run-agents",
+    retries: 2,
+    triggers: [{ event: "echo/agents.start" }],
+  },
+  async ({ event, step }) => {
+    const { meetingId } = agentsStartEventDataSchema.parse(event.data);
+
+    const extractor = await step.run("action-extractor", () =>
+      runActionExtractor(meetingId),
+    );
+
+    return { meetingId, actionCount: extractor.actions.length };
+  },
+);
+
