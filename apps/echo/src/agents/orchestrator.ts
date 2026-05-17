@@ -7,6 +7,7 @@ import { getRecordingDownloadUrl } from "@/integrations/recall";
 import { transcribeFromUrl } from "@/integrations/speechmatics";
 import { putAudio } from "@/integrations/vultr-storage";
 import { runActionExtractor } from "./action-extractor";
+import { runStakeholderClassifier } from "./stakeholder-classifier";
 
 const recordingDoneEventDataSchema = z.object({
   recallBotId: z.string(),
@@ -111,7 +112,15 @@ export const runAgents = inngest.createFunction(
       runActionExtractor(meetingId),
     );
 
-    return { meetingId, actionCount: extractor.actions.length };
+    const classifier = await step.run("stakeholder-classifier", () =>
+      runStakeholderClassifier(meetingId),
+    );
+
+    return {
+      meetingId,
+      actionCount: extractor.actions.length,
+      speakerCount: classifier.output.speakers.length,
+    };
   },
 );
 

@@ -79,4 +79,37 @@ What does NOT deserve an entry:
 
 ## Build session decisions (append below as you make them)
 
-<!-- New entries go here -->
+## 2026-05-17 06:00 — Skip vendor SDKs for Recall.ai and Speechmatics
+**Decision:** Use raw `fetch` for both Recall.ai and Speechmatics instead of `@recall-ai/sdk` and `speechmatics` npm packages. Wrapped responses in Zod for safety.
+**Why:** We hit ~3 endpoints per vendor. Pulling SDKs adds bundle weight, transitive deps, and an extra layer of mocking in tests. Raw fetch is testable with `vi.stubGlobal("fetch", …)` and the surface is small enough to maintain.
+**Considered:** Use the official SDKs — rejected for the reasons above.
+**Founder impact:** Smaller bundle, simpler tests; small risk that if Recall changes a payload field name we silently drop it (Zod will throw, surfacing the bug fast).
+**Reversible:** Yes — swap to SDK is a one-file change.
+
+## 2026-05-17 06:00 — Use Zod v4 (came down from npm as default)
+**Decision:** Stayed on the installed Zod v4 (originally plan referenced v3).
+**Why:** v4 is already in `node_modules` and the API differences are minor for our usage. The one v4 quirk we hit was `.default()` after `.transform()` now needs the post-transform type (`boolean` not `"true"`) — fixed in `env.ts`.
+**Considered:** Pinning Zod v3 — rejected because v4 is now the maintained branch and the migration is trivial.
+**Founder impact:** Future Zod docs you read should be v4 docs.
+**Reversible:** Yes, low-cost downgrade if needed.
+
+## 2026-05-17 06:00 — Dashboard mounted at /dashboard, not /(dashboard)/
+**Decision:** Public landing at `/`, dashboard at `/dashboard`, meeting detail at `/dashboard/meetings/[id]`. Not using a `(dashboard)` route group.
+**Why:** The original plan put `(dashboard)/page.tsx` AND `page.tsx` both at `/` which is a Next.js routing conflict (parens-groups don't add to URL). Picking explicit `/dashboard` avoids ambiguity.
+**Considered:** Make landing live under `(marketing)/page.tsx` — also valid, but less common URL pattern for SaaS dashboards.
+**Founder impact:** Demo URL becomes `echo.resyl.app/dashboard` (links from landing CTA) and meeting detail is `echo.resyl.app/dashboard/meetings/[id]`.
+**Reversible:** Yes, easy to rename routes later.
+
+## 2026-05-17 06:00 — Inlined LLM prompts as TS exports, not .txt files
+**Decision:** Agent prompts live in `src/agents/prompts/*.ts` as exported string constants instead of `.txt` files loaded via `fs.readFileSync`.
+**Why:** Next.js App Router + Turbopack don't reliably bundle adjacent .txt files into the serverless output. TS exports are part of the module graph, type-safe, and never have a missing-file bug.
+**Considered:** Use `import "x.txt?raw"` via webpack loader — rejected as unsupported by Turbopack today.
+**Founder impact:** None visible. Prompt iteration is slightly more annoying (need to escape quotes) but still a single file edit.
+**Reversible:** Trivial to swap to fs-based loading once Turbopack supports `?raw`.
+
+## 2026-05-17 06:00 — Inngest v4 createFunction API used directly
+**Decision:** Use the new 3-arg → 2-arg shape `createFunction({ id, triggers, ...config }, handler)` (Inngest v4) instead of the v3 `(config, trigger, handler)` shape shown in the plan.
+**Why:** Inngest v4 is installed; the v3 signature no longer typechecks. v4 collapses the trigger object into the options bag.
+**Considered:** Pin Inngest v3 — rejected as v4 has cleaner API and active support.
+**Founder impact:** None for the demo; event names and step semantics are unchanged.
+**Reversible:** Yes, package downgrade.
