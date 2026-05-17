@@ -9,6 +9,7 @@ import { putAudio } from "@/integrations/vultr-storage";
 import { runActionExtractor } from "./action-extractor";
 import { runStakeholderClassifier } from "./stakeholder-classifier";
 import { runDecisionMaker } from "./decision-maker";
+import { runCommsDrafter } from "./comms-drafter";
 
 const recordingDoneEventDataSchema = z.object({
   recallBotId: z.string(),
@@ -121,13 +122,17 @@ export const runAgents = inngest.createFunction(
       runDecisionMaker(meetingId),
     );
 
+    const comms = await step.run("comms-drafter", () =>
+      runCommsDrafter(meetingId, decision.output, decision.agentMessageId),
+    );
+
     return {
       meetingId,
       actionCount: extractor.actions.length,
       speakerCount: classifier.output.speakers.length,
-      hubspotCount: decision.output.workflow.hubspot_updates.length,
-      linearCount: decision.output.workflow.linear_issues.length,
-      gmailCount: decision.output.workflow.gmail_drafts.length,
+      hubspotCount: comms.workflow.hubspot_updates.length,
+      linearCount: comms.workflow.linear_issues.length,
+      gmailCount: comms.workflow.gmail_drafts.length,
     };
   },
 );
