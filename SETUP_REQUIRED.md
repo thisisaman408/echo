@@ -29,35 +29,15 @@ Total founder time required: **~60–90 minutes** end-to-end before submission.
 2. Cloud Compute (Regular Performance) → **Tokyo** (ap-northeast-1) → Ubuntu 24.04 → 2 vCPU / 4 GB plan (~$24/mo, well within your $200 credit).
 3. Add your SSH key. Note the public IP.
 4. Point DNS: in your domain provider (Cloudflare for resyl.app), add an A record `echo` → Vultr IP, TTL 60s.
-5. SSH in:
+5. SSH in and run the bootstrap script. It installs Postgres 16 + pgvector, Node 22, pnpm, pm2, Caddy; creates the echo DB + user; opens UFW for 22/80/443; prints the DATABASE_URL.
    ```bash
    ssh root@<vultr-ip>
-   apt update && apt upgrade -y
-   apt install -y curl git build-essential ufw postgresql-16 postgresql-16-pgvector caddy
-   curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-   apt install -y nodejs
-   npm install -g pnpm@10 pm2
-   ufw allow 22 && ufw allow 80 && ufw allow 443 && ufw enable
+   curl -fsSL https://raw.githubusercontent.com/thisisaman408/echo/main/scripts/bootstrap-vm.sh -o bootstrap-vm.sh
+   chmod +x bootstrap-vm.sh
+   ECHO_DOMAIN=echo.resyl.app ./bootstrap-vm.sh
    ```
-6. Configure Postgres:
-   ```bash
-   sudo -u postgres psql <<EOF
-   CREATE USER echo WITH PASSWORD '<PICK_STRONG_PASSWORD>';
-   CREATE DATABASE echo OWNER echo;
-   \c echo
-   CREATE EXTENSION IF NOT EXISTS vector;
-   EOF
-   ```
-7. Configure Caddy:
-   ```bash
-   cat > /etc/caddy/Caddyfile <<EOF
-   echo.resyl.app {
-     reverse_proxy localhost:3000
-   }
-   EOF
-   systemctl reload caddy
-   ```
-8. Smoke test: `curl https://echo.resyl.app` → 502 (Caddy + TLS up, app not deployed yet — expected).
+   Copy the printed `DATABASE_URL` — you'll paste it into `.env` in step 3.
+6. Smoke test: `curl https://echo.resyl.app` → 502 (Caddy + TLS up, app not deployed yet — expected).
 
 ---
 
@@ -71,7 +51,7 @@ Open `08-env.example` side-by-side as you fill these. Stop when all 20 are fille
 - [x] **Featherless**: activate Premium via the Featherless Discord hackathon coupon → dashboard → `FEATHERLESS_API_KEY`. Pick a Llama 3.1 instruct model from the catalog for the two `FEATHERLESS_MODEL_*` vars (defaults to `meta-llama/Meta-Llama-3.1-8B-Instruct`).
 
 ### To do
-- [ ] **Recall.ai** (2 min): https://ap-northeast-1.recall.ai/dashboard/developers → API key → `RECALL_API_KEY`. Generate a webhook secret yourself: `openssl rand -hex 16` → `RECALL_WEBHOOK_SECRET`. Register webhook URL `https://echo.resyl.app/api/recall/webhook` in Recall dashboard with the secret.
+- [ ] **Recall.ai** (5 min): https://ap-northeast-1.recall.ai/dashboard/developers → API key → `RECALL_API_KEY`. Then https://ap-northeast-1.recall.ai/dashboard/webhooks → create webhook → endpoint `https://echo.resyl.app/api/recall/webhook`, events `bot.status_change` + `recording.done`. Recall (via Svix) returns a secret like `whsec_...` — paste the **full string including the whsec_ prefix** as `RECALL_WEBHOOK_SECRET`. (Do NOT generate one locally — the previous instruction here was wrong.)
 - [ ] **Google OAuth (15 min — the slowest one)**:
   1. https://console.cloud.google.com → New project "echo-hackathon"
   2. APIs & Services → Library → enable **Gmail API** + **Google Calendar API**
