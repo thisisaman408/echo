@@ -17,6 +17,7 @@ const envSchema = z.object({
   // Auth (Better Auth)
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.string().url().default("http://localhost:3000"),
+  DASHBOARD_PASSWORD: z.string().min(4).default("echo2026"),
 
   // Google OAuth (shared: Better Auth login + Gmail drafts + Recall calendar)
   GOOGLE_OAUTH_CLIENT_ID: z.string().min(1),

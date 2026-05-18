@@ -2,6 +2,8 @@ import Link from "next/link";
 import { desc } from "drizzle-orm";
 import { db } from "@/db/client";
 import { meetings } from "@/db/schema";
+import { StartBotForm } from "@/components/start-bot-form";
+import { LogoutButton } from "@/components/logout-button";
 
 export const dynamic = "force-dynamic";
 
@@ -23,31 +25,41 @@ export default async function DashboardPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-6xl px-6 py-12">
-        <header className="mb-12 flex items-baseline justify-between">
+        <header className="mb-12 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">ECHO</h1>
             <p className="text-sm text-slate-400">
               Autonomous meeting workflow autopilot
             </p>
           </div>
-          <Link
-            href="/"
-            className="text-sm text-slate-400 hover:text-lime-400"
-          >
-            Home
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/dashboard/search"
+              className="text-sm text-slate-400 hover:text-lime-400"
+            >
+              Search
+            </Link>
+            <Link
+              href="/"
+              className="text-sm text-slate-400 hover:text-lime-400"
+            >
+              Home
+            </Link>
+            <LogoutButton />
+          </div>
         </header>
 
-        <section className="mb-8">
+        <StartBotForm />
+
+        <section>
           <h2 className="mb-4 text-sm font-medium uppercase tracking-widest text-slate-500">
-            Recent meetings
+            Meeting history
           </h2>
           {recent.length === 0 ? (
             <div className="rounded-lg border border-slate-800 bg-slate-900 p-8 text-center text-slate-400">
               <p className="mb-2">No meetings yet.</p>
               <p className="text-sm">
-                Dispatch a bot via <code className="font-mono">POST /api/bots/start</code>{" "}
-                to join your next Zoom call.
+                Paste a Zoom or Meet URL above and hit "Send bot" to get started.
               </p>
             </div>
           ) : (
@@ -66,11 +78,11 @@ export default async function DashboardPage() {
                         {m.title ?? m.meetingUrl}
                       </div>
                       <div className="mt-1 font-mono text-xs text-slate-500">
-                        {m.id}
+                        {new Date(m.createdAt).toLocaleString()} · {m.id}
                       </div>
                     </div>
                     <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
                         STATUS_BADGE[m.status] ?? STATUS_BADGE.scheduled
                       }`}
                     >
