@@ -27,15 +27,21 @@ export async function runPipeline(recallBotId: string): Promise<void> {
   const recordingUrl = await getRecordingDownloadUrl(recallBotId);
   if (!recordingUrl) throw new Error(`No recording URL for bot ${recallBotId}`);
 
-  // Archive audio to Vultr Object Storage
-  const res = await fetch(recordingUrl);
-  if (!res.ok) throw new Error(`Audio fetch failed: ${res.status}`);
-  const buf = Buffer.from(await res.arrayBuffer());
-  const audioKey = await putAudio(`meetings/${meeting.id}.mp4`, buf);
+  // Archive audio to Vultr Object Storage (non-fatal — pipeline continues even if bucket missing)
+  let audioKey: string | null = null;
+  try {
+    const res = await fetch(recordingUrl);
+    if (!res.ok) throw new Error(`Audio fetch failed: ${res.status}`);
+    const buf = Buffer.from(await res.arrayBuffer());
+    audioKey = await putAudio(`meetings/${meeting.id}.mp4`, buf);
+    console.log(`[pipeline] audio archived: ${audioKey}`);
+  } catch (err) {
+    console.warn(`[pipeline] audio archive skipped:`, (err as Error).message);
+  }
 
   await db
     .update(meetings)
-    .set({ audioStorageKey: audioKey, status: "processing" })
+    .set({ ...(audioKey ? { audioStorageKey: audioKey } : {}), status: "processing" })
     .where(eq(meetings.id, meeting.id));
 
   console.log(`[pipeline] transcribing meeting ${meeting.id}`);
