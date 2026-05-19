@@ -1,0 +1,194 @@
+================================================================
+ECHO — AI AGENT OLYMPICS HACKATHON SUBMISSION
+lablab.ai | Milan AI Week 2026
+================================================================
+
+
+----------------------------------------------------------------
+SUBMISSION TITLE
+----------------------------------------------------------------
+
+ECHO — Autonomous Meeting Workflow Agent
+
+
+----------------------------------------------------------------
+SHORT DESCRIPTION
+----------------------------------------------------------------
+
+ECHO is a multi-agent AI autopilot that joins your meetings via
+Recall.ai, then autonomously updates your CRM, creates Linear
+tasks, posts Slack summaries, and drafts follow-up emails — all
+before you leave the call. Every action is auditable: click any
+executed task to see the exact audio moment that triggered it.
+
+
+----------------------------------------------------------------
+LONG DESCRIPTION
+----------------------------------------------------------------
+
+ECHO is an autonomous multi-agent meeting workflow agent built
+for enterprise teams. The problem it solves: knowledge workers
+waste 5+ hours per week on post-meeting admin — updating CRMs,
+creating tasks, drafting follow-up emails, posting team
+summaries. ECHO compresses that to zero.
+
+HOW IT WORKS
+
+A Recall.ai bot auto-joins any Zoom, Google Meet, or Microsoft
+Teams call via URL — no app install, no calendar permission
+required. After the meeting ends, five specialist AI agents fire
+in sequence:
+
+1. Action Extractor (Featherless / Llama 3.1)
+   Extracts every commitment, deadline, and task from the
+   diarized transcript using a domain-specialized open-source
+   model running on Featherless serverless inference.
+
+2. Stakeholder Classifier (Featherless / Llama 3.1)
+   Identifies who said what, their role, company, and who owns
+   each action item. Depends entirely on Speechmatics speaker
+   diarization to know which speaker is which.
+
+3. Decision Maker (Gemini 2.5 Flash)
+   Synthesizes a full cross-system workflow: what to update in
+   HubSpot, what to create in Linear, what to post in Slack,
+   and what to draft in Gmail — based on all prior agent output.
+
+4. Comms Drafter (Gemini 2.5 Flash)
+   Writes the actual follow-up emails and Slack summaries in
+   natural language, ready for human review or auto-send.
+
+5. Executor
+   Fires real API calls to HubSpot, Linear, Slack, and Gmail.
+   Nothing is mocked. Every integration is live and auditable.
+
+THE ORIGINALITY MOAT: AUDITABLE AGENTIC MEMORY
+
+Every executed action is fully auditable. Click "Why?" on any
+action in the dashboard — ECHO shows:
+  • The exact 30-second transcript snippet that triggered it
+  • The full agent debate chain (all 5 agents' reasoning)
+  • Audio playback starting at the precise meeting timestamp
+
+This is the trust layer that lets enterprises actually deploy AI
+agents into real business systems. No other meeting tool does
+this. Otter, Fireflies, and Fellow summarize. ECHO executes —
+and lets you audit every decision back to the moment it was made.
+
+SEMANTIC SEARCH ACROSS ALL MEETINGS
+
+Every transcript segment is embedded with Google's
+gemini-embedding-001 (3072 dimensions) and stored in pgvector
+on Vultr Postgres with an HNSW index. Users search their entire
+meeting history in natural language — "What did Sarah say about
+pricing?" — and Gemini synthesizes a direct answer from the
+top matching segments in real time.
+
+SPONSOR STACK — ALL DO REAL, NON-DECORATIVE WORK
+
+VULTR
+Tokyo VM (ap-northeast-1) hosts the entire application stack:
+Next.js 16, Postgres 16 + pgvector, Caddy reverse proxy with
+automatic TLS for echo.resyl.app. Vultr Object Storage archives
+every meeting's audio file for the audit drill-down player.
+Remove Vultr and the product does not exist — it is the literal
+system of record for planning, coordination, and execution.
+
+SPEECHMATICS
+Batch transcribes and diarizes every meeting audio recording
+via the Speechmatics API. Speaker diarization (S1, S2 labels)
+is what makes the Stakeholder Classifier possible — without it,
+agents cannot assign actions to specific people. Speechmatics
+is the foundation the entire pipeline runs on.
+
+FEATHERLESS
+Serves Llama 3.1 8B Instruct via serverless OpenAI-compatible
+inference for the two domain-specialized agents. Async-first
+architecture: both agents run in the background after the
+meeting. No GPU management. MIT licensed. Fully open-source
+and reproducible.
+
+GEMINI
+Gemini 2.5 Flash powers Decision Maker (multi-system reasoning)
+and Comms Drafter (natural language writing). gemini-embedding-
+001 embeds all transcript segments into pgvector for semantic
+search. Gemini also synthesizes the natural-language answer
+shown above search results. Multimodal-ready for screen shares
+and deck PDFs in a future version.
+
+TECHNICAL STACK
+
+Framework:      Next.js 16 (App Router, Server Actions)
+Language:       TypeScript (strict mode, zero any)
+Database:       Postgres 16 + pgvector (HNSW cosine index)
+ORM:            Drizzle ORM
+Orchestration:  Inngest (event-driven agent pipeline)
+Meeting Bot:    Recall.ai (Zoom / Meet / Teams capture)
+Transcription:  Speechmatics (batch + diarization)
+AI Reasoning:   Gemini 2.5 Flash (Google AI)
+AI Extraction:  Llama 3.1 8B via Featherless
+Embeddings:     gemini-embedding-001 (3072 dims)
+Vector Search:  pgvector on Vultr Postgres
+Audio Storage:  Vultr Object Storage (S3-compatible)
+Infrastructure: Vultr Tokyo VM + Caddy TLS
+Webhooks:       Recall.ai via Svix signature verification
+CRM:            HubSpot (Private App API)
+Tasks:          Linear (Personal API Key)
+Messaging:      Slack (Incoming Webhook)
+Email:          Gmail (OAuth + Drafts API)
+UI:             shadcn/ui + Tailwind CSS v4 + Motion
+Deployment:     pm2 on Vultr Ubuntu 24.04
+
+LINKS
+
+Live Demo:   https://echo.resyl.app    (password: echo2026)
+GitHub:      https://github.com/thisisaman408/echo
+License:     MIT
+
+
+----------------------------------------------------------------
+PARTICIPATION MODE
+----------------------------------------------------------------
+
+Online
+
+
+----------------------------------------------------------------
+CATEGORIES
+----------------------------------------------------------------
+
+Agentic Workflows
+Enterprise Utility
+Collaborative Systems
+Intelligent Reasoning
+
+
+----------------------------------------------------------------
+TECHNOLOGIES USED
+----------------------------------------------------------------
+
+Vultr (Cloud Infrastructure)
+Google Gemini (Gemini 2.5 Flash + gemini-embedding-001)
+Featherless (Llama 3.1 8B Instruct — serverless inference)
+Speechmatics (Speech-to-text + speaker diarization)
+Recall.ai (Meeting bot platform)
+Next.js 16
+TypeScript
+Postgres 16 + pgvector
+Drizzle ORM
+Inngest
+Svix
+HubSpot API
+Linear API
+Slack API
+Gmail API (Google OAuth)
+Tailwind CSS v4
+shadcn/ui
+Motion (Framer Motion)
+Vultr Object Storage (S3-compatible)
+Caddy (reverse proxy + TLS)
+
+
+================================================================
+END OF SUBMISSION
+================================================================

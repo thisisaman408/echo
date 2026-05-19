@@ -1,0 +1,244 @@
+ECHO — DEMO SCRIPT (5 MINUTES)
+AI Agent Olympics Hackathon | Milan AI Week 2026
+================================================
+
+BEFORE YOU START:
+- Open these tabs: echo.resyl.app/dashboard, meet.new, recall.ai/dashboard/webhooks,
+  portal.speechmatics.com, featherless.ai/dashboard, aistudio.google.com,
+  linear.app, slack (your #echo-test channel), my.vultr.com
+- Start QuickTime screen recording
+- Have your friend ready on the call
+
+================================================
+ACT 1 — THE HOOK (0:00 – 0:30)
+================================================
+
+[FACE TO CAMERA]
+
+"Hi, I'm Aman Kumar, and I built ECHO for the AI Agent Olympics Hackathon.
+
+Here's the problem: every manager leaves a meeting with good intentions,
+no time, and a CRM that hasn't been updated in a week.
+
+ECHO is an autonomous multi-agent meeting workflow agent.
+The pitch is one sentence: by the time you leave the meeting, the work is done.
+
+Let me show you live."
+
+================================================
+ACT 2 — SHOW THE DASHBOARD + SEND THE BOT (0:30 – 1:00)
+================================================
+
+[SWITCH TO SCREEN — echo.resyl.app/dashboard]
+
+"This is ECHO's dashboard. It's deployed on a Vultr Tokyo VM —
+Vultr is the backbone of our entire infrastructure: the app server,
+Postgres with pgvector, and object storage for audio archives.
+
+I'm going to create a real Google Meet right now."
+
+[Open meet.new in a new tab — copy the URL]
+
+"I'll paste that URL here and hit Send bot."
+
+[Paste URL into ECHO dashboard, click Send bot]
+
+"A Recall.ai bot is now joining that meeting. No app install,
+no calendar setup — just a URL. It's in the call."
+
+================================================
+ACT 3 — THE LIVE MEETING (1:00 – 2:10)
+================================================
+
+[SWITCH TO GOOGLE MEET — friend is already there]
+
+"I'm in the meeting with my colleague. This is completely real.
+ECHO's bot is recording right now."
+
+[Talk naturally for about 60 seconds. Say something like:]
+
+"Hey, quick sync. So Sarah from Acme Corp confirmed she wants to move forward
+with the enterprise plan. I need to send her the pricing proposal by Friday.
+Also, we need to create a Linear ticket for the API integration work —
+let's assign that to the engineering team. And make sure we post
+a summary to the team Slack channel. Alright, that's it, let's wrap up."
+
+[End the call]
+
+"Call ended. The recording is uploading. The pipeline starts right now."
+
+================================================
+ACT 4 — WATCH THE PIPELINE FIRE (2:10 – 3:10)
+================================================
+
+[SWITCH TO echo.resyl.app/dashboard]
+
+"Watch this meeting go from scheduled to processing to complete."
+
+[Click into the meeting once agents start firing]
+
+"Five specialist agents just ran in sequence. Let me walk you through each one.
+
+First — the transcript. This was produced by Speechmatics."
+
+[Scroll to Transcript section]
+
+"Speechmatics batch-transcribed the audio and diarized it —
+speaker by speaker. S1, S2 — it knows who said what.
+Without this diarization, the Stakeholder Classifier has nobody to assign
+actions to. Speechmatics is the foundation everything else runs on.
+
+Now the agents."
+
+[Scroll back up to Agent Feed]
+
+"Action Extractor — powered by Featherless, running Llama 3.1.
+It pulled the commitments straight out of the transcript:
+'Send Sarah the pricing proposal by Friday.'
+Domain-specialized, async, open-source — exactly what Featherless asked for.
+
+Stakeholder Classifier — also on Featherless and Llama 3.1.
+It identified who Sarah is, her role, her company, and who owns each action.
+
+Decision Maker — this is Gemini 2.5 Flash.
+Featherless handled the extraction. Now Gemini does the reasoning:
+given these actions and stakeholders, what should actually happen
+across HubSpot, Linear, Slack, and Gmail? That's a harder job.
+We use the right model for the right task.
+
+Comms Drafter — also Gemini.
+It wrote the actual follow-up email and Slack summary.
+
+Executor — fired the real API calls."
+
+[Scroll to Executed Actions panel]
+
+"Linear issue — created. Slack message — posted. HubSpot note — logged."
+
+================================================
+ACT 5 — THE ORIGINALITY MOAT — AUDIT DRILL-DOWN (3:10 – 3:40)
+================================================
+
+[Click 'Why?' on the Linear action]
+
+"Here's what makes ECHO different from every other meeting tool.
+
+Every other tool — Otter, Fireflies, Fellow — summarizes.
+ECHO executes. And then it lets you audit every single decision.
+
+Click Why on any executed action. You see the exact 30-second
+transcript snippet that triggered it, the full agent debate,
+and the audio plays at the precise timestamp.
+
+This is the trust layer that lets enterprises actually deploy
+agents into real systems. You can trace every action back to
+the moment in the meeting that caused it."
+
+================================================
+ACT 6 — SEMANTIC SEARCH (3:40 – 4:00)
+================================================
+
+[Click Search in the nav — go to /dashboard/search]
+
+"One more Gemini feature. Every transcript segment is embedded
+using Gemini embeddings and stored in pgvector on Vultr Postgres.
+
+I type 'pricing proposal' — and it finds the exact moment
+from the meeting where that was discussed. Semantic search
+across your entire meeting history. Ask anything."
+
+[Type "Sarah" or "pricing proposal" — show results]
+
+================================================
+ACT 7 — SHOW THE REAL SYSTEMS (4:00 – 4:30)
+================================================
+
+[Switch to Slack — #echo-test channel]
+
+"Here's the Slack message that just fired. Real channel, real message."
+
+[Switch to Linear]
+
+"Here's the Linear issue that was created automatically."
+
+[Switch to Recall.ai webhooks dashboard — ap-northeast-1.recall.ai]
+
+"Here's Recall.ai — you can see the webhook deliveries. Every event
+from the meeting hitting our server."
+
+[Switch to Vultr console — my.vultr.com]
+
+"Here's our Vultr Tokyo VM. And in Object Storage —"
+
+[Click into Object Storage, show the echo bucket with .mp4 files]
+
+"Every meeting's audio is archived here on Vultr for the audit trail.
+The signed URL in the drill-down player comes straight from this bucket."
+
+[Switch to Featherless dashboard briefly]
+
+"Featherless — our serverless inference layer for the two Llama agents."
+
+[Switch to Google AI Studio briefly]
+
+"And Gemini — handling our reasoning and drafting layer."
+
+================================================
+ACT 7 — BUSINESS VALUE + CLOSE (4:20 – 5:00)
+================================================
+
+[FACE TO CAMERA]
+
+"The business case is simple.
+
+The average manager spends 5 hours a week on post-meeting admin.
+There are 100 million knowledge workers globally.
+ECHO compresses that 5 hours to zero — and every action is auditable,
+so you can actually trust an AI agent to touch your CRM and task tracker.
+
+We hit all five challenge tracks:
+— Intelligent Reasoning: Gemini synthesizing multi-system workflows
+— Agentic Workflows: 5 agents, real API execution, no human in the loop
+— Enterprise Utility: CRM, tasks, Slack, email — tools managers use every day
+— Multimodal: audio + diarization via Speechmatics
+— Collaborative Systems: 5 specialized agents coordinating through a shared message bus
+
+The code is MIT licensed at github.com/thisisaman408/echo.
+It's live right now at echo.resyl.app.
+
+ECHO — the work is done before you leave the meeting."
+
+================================================
+END — 5:00
+================================================
+
+
+TIMING GUIDE:
+  0:00 – 0:30   Hook + intro
+  0:30 – 1:00   Dashboard + send bot
+  1:00 – 2:10   Live meeting
+  2:10 – 3:10   Pipeline walkthrough (Speechmatics, Featherless, Gemini)
+  3:10 – 3:40   Audit drill-down
+  3:40 – 4:00   Semantic search (Gemini embeddings + pgvector)
+  4:00 – 4:30   Real systems (Slack, Linear, Recall, Vultr, Featherless, Gemini)
+  4:30 – 5:00   Business value + close
+
+
+TABS TO HAVE OPEN BEFORE RECORDING:
+  1. echo.resyl.app/dashboard
+  2. meet.new (open fresh)
+  3. ap-northeast-1.recall.ai/dashboard/webhooks
+  4. portal.speechmatics.com
+  5. featherless.ai/dashboard
+  6. aistudio.google.com
+  7. linear.app (your team)
+  8. Your Slack workspace, #echo-test channel
+  9. my.vultr.com (Object Storage > echo bucket)
+
+
+KEY LINES TO HIT FOR EACH JUDGE:
+  VULTR:        "Vultr Tokyo VM hosts the app, Postgres, and audio archives in Object Storage"
+  SPEECHMATICS: "Speechmatics diarized the transcript — speaker by speaker — it's the foundation"
+  FEATHERLESS:  "Action Extractor and Stakeholder Classifier on Featherless, Llama 3.1, async"
+  GEMINI:       "Decision Maker and Comms Drafter on Gemini — reasoning and writing, not extraction"
+  ORIGINALITY:  "Click Why — trace any action back to the audio moment that caused it"
