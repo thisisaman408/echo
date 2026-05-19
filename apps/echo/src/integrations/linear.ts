@@ -46,7 +46,7 @@ export async function createIssue(input: CreateIssueInput) {
     description: input.description,
     priority: input.priority ? PRIORITY_MAP[input.priority] : undefined,
     assigneeId,
-    projectId: input.projectId ?? env.ECHO_DEFAULT_LINEAR_PROJECT_ID,
+    projectId: input.projectId || env.ECHO_DEFAULT_LINEAR_PROJECT_ID || undefined,
   });
 
   const issue = await payload.issue;
