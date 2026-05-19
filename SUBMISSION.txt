@@ -150,7 +150,39 @@ License:     MIT
 PARTICIPATION MODE
 ----------------------------------------------------------------
 
-Online
+Solo (Online)
+
+
+----------------------------------------------------------------
+EVENT TRACKS
+----------------------------------------------------------------
+
+🔄 Agentic Workflows
+ECHO's 5-agent pipeline plans its own steps, calls external APIs
+(HubSpot, Linear, Slack, Gmail), and manages multi-step tasks
+automatically after every meeting — no human intervention.
+
+🌍 Enterprise Utility
+Solves the real-world friction point every manager at AI Week
+faces daily: 5 hours/week of post-meeting admin. CRM updates,
+task creation, follow-up emails — all done autonomously.
+
+🤝 Collaborative Systems
+Five specialized agents (Action Extractor, Stakeholder Classifier,
+Decision Maker, Comms Drafter, Executor) coordinate through a
+shared message bus. No single LLM could do what the pipeline does
+together.
+
+🧠 Intelligent Reasoning
+Decision Maker (Gemini 2.5 Flash) synthesizes cross-system
+action plans from agent outputs, handles ambiguity, and routes
+to the right integrations without human intervention.
+
+🧩 Multimodal Intelligence
+Speechmatics processes meeting audio with speaker diarization.
+Every transcript segment is embedded with Gemini into pgvector.
+Audio is archived on Vultr and played back at exact timestamps
+in the audit drill-down.
 
 
 ----------------------------------------------------------------
@@ -161,6 +193,7 @@ Agentic Workflows
 Enterprise Utility
 Collaborative Systems
 Intelligent Reasoning
+Multimodal Intelligence
 
 
 ----------------------------------------------------------------
