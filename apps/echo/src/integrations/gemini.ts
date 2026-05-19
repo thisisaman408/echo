@@ -15,7 +15,7 @@ import { env } from "@/lib/env";
 let _client: GoogleGenerativeAI | null = null;
 function client(): GoogleGenerativeAI {
   if (_client) return _client;
-  _client = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+  _client = new GoogleGenerativeAI(env.GEMINI_API_KEY, { apiVersion: "v1" });
   return _client;
 }
 
