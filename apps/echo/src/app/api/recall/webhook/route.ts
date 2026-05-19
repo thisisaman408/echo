@@ -21,17 +21,15 @@ export const runtime = "nodejs";
 const statusChangeSchema = z.object({
   event: z.literal("bot.status_change"),
   data: z.object({
-    bot_id: z.string(),
-    status: z.object({
-      code: z.string(),
-    }),
+    bot: z.object({ id: z.string() }),
+    data: z.object({ code: z.string() }),
   }),
 });
 
 const recordingDoneSchema = z.object({
   event: z.literal("recording.done"),
   data: z.object({
-    bot_id: z.string(),
+    bot: z.object({ id: z.string() }),
     recording: z
       .object({
         id: z.string().optional(),
@@ -58,9 +56,9 @@ export async function POST(req: Request) {
   const rawBody = await req.text();
 
   const svixHeaders = {
-    "svix-id": req.headers.get("svix-id") ?? "",
-    "svix-timestamp": req.headers.get("svix-timestamp") ?? "",
-    "svix-signature": req.headers.get("svix-signature") ?? "",
+    "svix-id": req.headers.get("svix-id") ?? req.headers.get("webhook-id") ?? "",
+    "svix-timestamp": req.headers.get("svix-timestamp") ?? req.headers.get("webhook-timestamp") ?? "",
+    "svix-signature": req.headers.get("svix-signature") ?? req.headers.get("webhook-signature") ?? "",
   };
 
   if (
@@ -91,21 +89,22 @@ export async function POST(req: Request) {
     const statusEvent = statusChangeSchema.safeParse(payload);
     if (statusEvent.success) {
       const mappedStatus = statusCodeToMeetingStatus(
-        statusEvent.data.data.status.code,
+        statusEvent.data.data.data.code,
       );
       await db
         .update(meetings)
         .set({ status: mappedStatus })
-        .where(eq(meetings.recallBotId, statusEvent.data.data.bot_id));
+        .where(eq(meetings.recallBotId, statusEvent.data.data.bot.id));
     }
   }
 
   if (envelope.data.event === "recording.done") {
     const recEvent = recordingDoneSchema.safeParse(payload);
     if (recEvent.success) {
+      const botId = recEvent.data.data.bot.id;
       // Fire-and-forget: return 200 immediately, pipeline runs in background.
-      runPipeline(recEvent.data.data.bot_id).catch((err) =>
-        console.error(`[pipeline] failed for bot ${recEvent.data.data.bot_id}:`, err),
+      runPipeline(botId).catch((err) =>
+        console.error(`[pipeline] failed for bot ${botId}:`, err),
       );
     }
   }
