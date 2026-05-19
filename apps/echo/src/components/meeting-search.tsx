@@ -84,7 +84,7 @@ export function MeetingSearch() {
                   href={`/dashboard/meetings/${h.meetingId}#t-${h.transcriptId}`}
                   className="text-sm font-medium text-slate-100 hover:text-lime-400"
                 >
-                  {h.meetingTitle ?? `Meeting ${h.meetingId.slice(0, 8)}`}
+                  {h.meetingTitle ?? h.meetingId.slice(0, 8)}
                 </Link>
                 <div className="flex items-center gap-3 font-mono text-xs text-slate-500">
                   <span>{h.speakerName ?? h.speaker}</span>
