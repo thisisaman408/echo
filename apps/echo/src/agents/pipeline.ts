@@ -1,4 +1,4 @@
-import { eq, isNull, and } from "drizzle-orm";
+import { eq, isNull, and, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { meetings, transcripts } from "@/db/schema";
 import { getRecordingDownloadUrl } from "@/integrations/recall";
@@ -67,10 +67,11 @@ export async function runPipeline(recallBotId: string): Promise<void> {
       if (pending.length > 0) {
         const vectors = await embedTexts(pending.map((p) => p.text));
         for (let i = 0; i < pending.length; i++) {
-          await db
-            .update(transcripts)
-            .set({ embedding: vectors[i] })
-            .where(eq(transcripts.id, pending[i].id));
+          await db.execute(sql`
+            UPDATE transcripts
+            SET embedding = ${`[${vectors[i].join(",")}]`}::vector
+            WHERE id = ${pending[i].id}
+          `);
         }
       }
     } catch (err) {
