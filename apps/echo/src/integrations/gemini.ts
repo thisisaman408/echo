@@ -45,32 +45,35 @@ export async function geminiJson<T>(
   opts: CompleteJsonOptions,
   schema: z.ZodType<T>,
 ): Promise<T> {
-  const maxRetries = opts.maxRetries ?? 2;
+  const maxRetries = opts.maxRetries ?? 4;
   let lastErr: unknown;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const temperature =
-      attempt === 0 ? (opts.temperature ?? 0.3) : 0;
-    const result = await opts.model.generateContent({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: `${opts.system}\n\n${opts.user}` }],
-        },
-      ],
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature,
-      },
-    });
-    const raw = result.response.text();
     try {
-      return schema.parse(JSON.parse(raw));
+      const temperature = attempt === 0 ? (opts.temperature ?? 0.3) : 0;
+      const result = await opts.model.generateContent({
+        contents: [{ role: "user", parts: [{ text: `${opts.system}\n\n${opts.user}` }] }],
+        generationConfig: { responseMimeType: "application/json", temperature },
+      });
+      const raw = result.response.text();
+      try {
+        return schema.parse(JSON.parse(raw));
+      } catch (err) {
+        lastErr = err;
+      }
     } catch (err) {
       lastErr = err;
+      const status = (err as { status?: number }).status;
+      if (status === 503 || status === 429) {
+        const delay = Math.min(5000 * Math.pow(2, attempt), 30000);
+        console.warn(`[gemini] ${status} on attempt ${attempt + 1}, retrying in ${delay}ms`);
+        await new Promise((r) => setTimeout(r, delay));
+        continue;
+      }
+      throw err;
     }
   }
   throw new Error(
-    `Gemini JSON parse failed after ${maxRetries + 1} attempts: ${
+    `Gemini failed after ${maxRetries + 1} attempts: ${
       lastErr instanceof Error ? lastErr.message : String(lastErr)
     }`,
   );
