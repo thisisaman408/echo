@@ -37,13 +37,17 @@ export function pollingStream<T>(opts: {
         if (cancelled) return;
         try {
           const rows = await opts.fetchNew(lastSeen);
+          if (cancelled) return;
           for (const r of rows) {
+            if (cancelled) return;
             controller.enqueue(encodeEvent(r));
             if (r.createdAt > lastSeen) lastSeen = r.createdAt;
           }
+          if (cancelled) return;
           // Heartbeat comment to keep proxies from closing the connection.
           controller.enqueue(new TextEncoder().encode(`: ping\n\n`));
         } catch (err) {
+          if (cancelled) return;
           controller.enqueue(
             encodeEvent({ error: (err as Error).message }, "error"),
           );
