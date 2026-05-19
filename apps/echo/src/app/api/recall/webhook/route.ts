@@ -4,7 +4,7 @@ import { z } from "zod";
 import { db } from "@/db/client";
 import { meetings } from "@/db/schema";
 import { env } from "@/lib/env";
-import { inngest } from "@/lib/inngest";
+import { runPipeline } from "@/agents/pipeline";
 
 export const runtime = "nodejs";
 
@@ -103,13 +103,10 @@ export async function POST(req: Request) {
   if (envelope.data.event === "recording.done") {
     const recEvent = recordingDoneSchema.safeParse(payload);
     if (recEvent.success) {
-      await inngest.send({
-        name: "echo/meeting.recording_done",
-        data: {
-          recallBotId: recEvent.data.data.bot_id,
-          recordingUrl: recEvent.data.data.recording?.url,
-        },
-      });
+      // Fire-and-forget: return 200 immediately, pipeline runs in background.
+      runPipeline(recEvent.data.data.bot_id).catch((err) =>
+        console.error(`[pipeline] failed for bot ${recEvent.data.data.bot_id}:`, err),
+      );
     }
   }
 
