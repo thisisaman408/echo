@@ -40,7 +40,7 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().min(1),
   GEMINI_MODEL_REASONING: z.string().default("gemini-2.0-pro-exp"),
   GEMINI_MODEL_FAST: z.string().default("gemini-2.0-flash-exp"),
-  GEMINI_MODEL_EMBEDDING: z.string().default("text-embedding-004"),
+  GEMINI_MODEL_EMBEDDING: z.string().default("embedding-001"),
 
   // Featherless
   FEATHERLESS_API_KEY: z.string().min(1),

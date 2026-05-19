@@ -58,19 +58,23 @@ export async function runPipeline(recallBotId: string): Promise<void> {
       })),
     );
 
-    // Embed for pgvector search
-    const pending = await db
-      .select()
-      .from(transcripts)
-      .where(and(eq(transcripts.meetingId, meeting.id), isNull(transcripts.embedding)));
-    if (pending.length > 0) {
-      const vectors = await embedTexts(pending.map((p) => p.text));
-      for (let i = 0; i < pending.length; i++) {
-        await db
-          .update(transcripts)
-          .set({ embedding: vectors[i] })
-          .where(eq(transcripts.id, pending[i].id));
+    // Embed for pgvector search (non-fatal — search just won't work if this fails)
+    try {
+      const pending = await db
+        .select()
+        .from(transcripts)
+        .where(and(eq(transcripts.meetingId, meeting.id), isNull(transcripts.embedding)));
+      if (pending.length > 0) {
+        const vectors = await embedTexts(pending.map((p) => p.text));
+        for (let i = 0; i < pending.length; i++) {
+          await db
+            .update(transcripts)
+            .set({ embedding: vectors[i] })
+            .where(eq(transcripts.id, pending[i].id));
+        }
       }
+    } catch (err) {
+      console.warn(`[pipeline] embedding skipped:`, (err as Error).message);
     }
   }
 
