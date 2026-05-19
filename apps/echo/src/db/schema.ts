@@ -103,7 +103,7 @@ export const transcripts = pgTable(
     startSec: integer("start_sec").notNull(),
     endSec: integer("end_sec").notNull(),
     text: text("text").notNull(),
-    embedding: vector("embedding", { dimensions: 768 }),
+    embedding: vector("embedding", { dimensions: 3072 }),
     createdAt: createdAt(),
   },
   (t) => [
