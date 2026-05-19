@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db/client";
-import { embedText } from "@/integrations/gemini";
+import { embedText, geminiFlash } from "@/integrations/gemini";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -57,8 +57,18 @@ export async function POST(req: Request) {
     LIMIT ${parsed.limit}
   `);
 
-  return Response.json({
-    query: parsed.q,
-    results: Array.isArray(rows) ? rows : (rows as { rows?: SearchHit[] }).rows ?? [],
-  });
+  const results = Array.isArray(rows) ? rows : (rows as { rows?: SearchHit[] }).rows ?? [];
+
+  let summary = "";
+  if (results.length > 0) {
+    try {
+      const snippets = results.slice(0, 5).map((r, i) => `${i + 1}. "${r.text}"`).join("\n");
+      const res = await geminiFlash().generateContent(
+        `You are a meeting intelligence assistant. The user searched for: "${parsed.q}"\n\nHere are the most relevant transcript snippets found:\n${snippets}\n\nWrite a 2-sentence natural language answer summarizing what was discussed, as if you are answering the user's question directly. Be concise and specific.`
+      );
+      summary = res.response.text().trim();
+    } catch { /* non-fatal */ }
+  }
+
+  return Response.json({ query: parsed.q, results, summary });
 }

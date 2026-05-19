@@ -19,6 +19,7 @@ export function MeetingSearch() {
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(false);
   const [hits, setHits] = useState<SearchHit[] | null>(null);
+  const [summary, setSummary] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function runSearch(e: React.FormEvent) {
@@ -33,8 +34,9 @@ export function MeetingSearch() {
         body: JSON.stringify({ q, limit: 20 }),
       });
       if (!res.ok) throw new Error(`Search failed: ${res.status}`);
-      const data = (await res.json()) as { results: SearchHit[] };
+      const data = (await res.json()) as { results: SearchHit[]; summary?: string };
       setHits(data.results);
+      setSummary(data.summary ?? null);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -63,6 +65,13 @@ export function MeetingSearch() {
       {error && (
         <div className="mb-4 rounded-lg border border-rose-900 bg-rose-950/40 p-3 text-sm text-rose-300">
           {error}
+        </div>
+      )}
+
+      {summary && (
+        <div className="mb-4 rounded-lg border border-lime-900 bg-lime-950/30 px-4 py-3 text-sm text-lime-200">
+          <span className="mr-2 text-xs font-medium uppercase tracking-wider text-lime-500">Gemini</span>
+          {summary}
         </div>
       )}
 
